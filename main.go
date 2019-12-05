@@ -27,7 +27,7 @@ const (
 	usage                string = "Usage secrets <open|seal> [<file path>...] [--dry-run] [--verbose] [--root <project root>] [--key <encryption key name>]"
 	encryptCmd           string = "seal"
 	decryptCmd           string = "open"
-	keyRing              string = "immi"
+	keyRing              string = "project-secrets"
 	location             string = "europe-north1"
 )
 
