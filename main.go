@@ -27,8 +27,8 @@ const (
 	usage                string = "Usage secrets <open|seal> [<file path>...] [--dry-run] [--verbose] [--root <project root>] [--key <encryption key name>]"
 	encryptCmd           string = "seal"
 	decryptCmd           string = "open"
-	keyRing              string = "project-secrets"
-	location             string = "europe-north1"
+	keyRing              string = "immi-project-secrets"
+	location             string = "global"
 )
 
 var fileAlreadyTrackedError = errors.New("file already tracked")
