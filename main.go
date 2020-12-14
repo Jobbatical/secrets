@@ -24,7 +24,7 @@ var ignoreFolders = map[string]struct{}{
 const (
 	expectedOrganization string = "jobbatical"
 	expectedRepoHost     string = "github.com"
-	usage                string = "Usage secrets <open|seal> [<file path>...] [--dry-run] [--verbose] [--root <project root>] [--key <encryption key name>]"
+	usage                string = "Usage secrets <open|seal> [<file path>...] [--dry-run] [--verbose] [--root <project root>] [--key <encryption key name>] [--open-all]"
 	encryptCmd           string = "seal"
 	decryptCmd           string = "open"
 	keyRing              string = "immi-project-secrets"
