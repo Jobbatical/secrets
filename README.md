@@ -7,22 +7,18 @@ secrets open [<file path>...] [options]
 secrets seal [<file path>...] [options]
 ```
 
-
-### Pre-requisites
+### Prerequisites
 Make sure you have `Go` installed before proceeding with the installation process:
 
 #### OSX
-
 ```
 brew install go
 ```
 
 #### Linux
-
 https://golang.org/doc/install#tarball
 
 ### Secrets Install
-
 To install execute:
 
 ```
@@ -31,7 +27,6 @@ To install execute:
 ```
 
 ### Install Google Cloud API
-
 https://cloud.google.com/sdk/install
 
 ### Installation process
@@ -53,11 +48,10 @@ Decrypt a file or files.
 Encrypt a file or files.
 
 ## Options
-
 ```
-[--dry-run] 
-[--verbose] 
-[--root <project root>] 
+[--open-all]
+[--dry-run]
+[--verbose]
+[--root <project root>]
 [--key <encryption key name>]
 ```
-
