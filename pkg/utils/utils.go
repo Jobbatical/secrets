@@ -75,10 +75,10 @@ func RunCommand(name string, arg ...string) (*exec.Cmd, string, string, error) {
 	cmd.Stdout = &stdOut
 	cmd.Stderr = &stdErr
 	err := cmd.Run()
-	if err != nil {
-		ErrPrintln("command failed: %s", cmd)
-		ErrPrintln("%s", stdErr.String())
-	}
+	// if err != nil {
+	// 	ErrPrintln("command failed: %s", cmd)
+	// 	ErrPrintln("%s", stdErr.String())
+	// }
 	return cmd, stdOut.String(), stdErr.String(), err
 }
 
