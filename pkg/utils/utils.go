@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"sync"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -95,4 +96,33 @@ func ExitIfError(err error) {
 		ErrPrintln("Error: %s", err)
 		os.Exit(1)
 	}
+}
+
+func worker(c chan string, wg *sync.WaitGroup, fn func(string)) {
+	defer wg.Done()
+	for {
+		file, more := <-c
+		if more {
+			fn(file)
+		} else {
+			return
+		}
+	}
+}
+
+func InParallel(workerCount int, jobs []string, fn func(string)) {
+	ch := make(chan string, workerCount + 1)
+	go func() {
+		for _, job := range jobs {
+			ch <- job
+		}
+		close(ch)
+	}()
+
+	var wg sync.WaitGroup
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go worker(ch, &wg, fn)
+	}
+	wg.Wait()
 }

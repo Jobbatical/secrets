@@ -108,27 +108,31 @@ func main() {
 		if len(options.Files) == 0 {
 			options.Files, _ = utils.FindUnencryptedFiles(projectRoot)
 		}
-		for _, path := range options.Files {
+
+		utils.InParallel(5, options.Files, func(path string) {
 			fmt.Printf("encrypting %s\n", path)
 			utils.ExitIfError(kms.Encrypt(key, path))
 			err := git.AddToIgnored(projectRoot, path)
 			if err == git.ErrFileAlreadyTracked {
 				utils.ErrPrintln("Warning: plain-text file already checked in: %s", path)
-				continue
+				return
 			}
 			utils.ExitIfError(err)
-		}
+		})
+
 		os.Exit(0)
 	}
 	if options.Cmd == options.DecryptCmd {
 		if len(options.Files) == 0 {
 			options.Files, _ = utils.FindEncryptedFiles(options.OpenAll, projectRoot)
 		}
-		for _, path := range options.Files {
+
+		utils.InParallel(5, options.Files, func(path string) {
 			fmt.Printf("decrypting %s\n", path)
 			err := kms.Decrypt(key, path)
 			utils.ExitIfError(err)
-		}
+		})
+
 		os.Exit(0)
 	}
 	utils.ErrPrintln("Unknown command: %s\n%s", options.Cmd, options.Usage)
