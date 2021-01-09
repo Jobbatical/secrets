@@ -40,7 +40,7 @@ func popCommand(args []string) (string, []string, error) {
 		if !strings.HasPrefix(a, "-") {
 			return a, Remove(args, i), nil
 		} else {
-			break
+			continue
 		}
 	}
 	return "", args, errors.New("command not found")
