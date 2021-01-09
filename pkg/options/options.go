@@ -68,11 +68,13 @@ func popFiles(args []string) ([]string, []string, error) {
 	return files, os.Args, nil
 }
 
-func readRequiredConfig(v *string, argFlag string, envName string, desc string) {
+func readRequiredConfig(v *string, argFlag string, envName string, desc string) func() {
 	flag.StringVar(v, argFlag, os.Getenv(envName), desc)
-	if len(*v) == 0 {
-		fmt.Fprintf(os.Stderr, "Missing required configuration: %s\nPlease set %s environment var or pass --%s flag\n", desc, envName, argFlag)
-		os.Exit(2)
+	return func() {
+		if len(*v) == 0 {
+			fmt.Fprintf(os.Stderr, "Missing required configuration: %s\nPlease set %s environment var or pass --%s flag\n", desc, envName, argFlag)
+			os.Exit(2)
+		}
 	}
 }
 
@@ -96,10 +98,10 @@ func init() {
 	flag.BoolVar(&Verbose, "verbose", false, "Log debug info")
 
 	// Configuration
-	readRequiredConfig(&ExpectedOrganization, "org", "SECRETS_ORG", "Expected organization of the repo")
-	readRequiredConfig(&ExpectedRepoHost, "repo-host", "SECRETS_REPO_HOST", "Expected host for the repo")
-	readRequiredConfig(&KeyRing, "key-ring", "SECRETS_KEY_RING", "The key ring to use for encryption")
-	readRequiredConfig(&KeyLocation, "key-location", "SECRETS_KEY_LOCATION", "The location of the key ring")
+	defer readRequiredConfig(&ExpectedOrganization, "org", "SECRETS_ORG", "Expected organization of the repo")()
+	defer readRequiredConfig(&ExpectedRepoHost, "repo-host", "SECRETS_REPO_HOST", "Expected host for the repo")()
+	defer readRequiredConfig(&KeyRing, "key-ring", "SECRETS_KEY_RING", "The key ring to use for encryption")()
+	defer readRequiredConfig(&KeyLocation, "key-location", "SECRETS_KEY_LOCATION", "The location of the key ring")()
 
 	flag.Parse()
 }
