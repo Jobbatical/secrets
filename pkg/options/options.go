@@ -71,7 +71,7 @@ func popFiles(args []string) ([]string, []string, error) {
 func readRequiredConfig(v *string, argFlag string, envName string, desc string) {
 	flag.StringVar(v, argFlag, os.Getenv(envName), desc)
 	if len(*v) == 0 {
-		fmt.Fprintf(os.Stderr, "Missing required configuration: %s\nPlease set %s environment var or pass -%s flag\n", desc, envName, argFlag)
+		fmt.Fprintf(os.Stderr, "Missing required configuration: %s\nPlease set %s environment var or pass --%s flag\n", desc, envName, argFlag)
 		os.Exit(2)
 	}
 }
