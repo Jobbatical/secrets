@@ -10,8 +10,6 @@ import (
 	"jobbatical/secrets/pkg/utils"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 )
 
 var verbose bool = options.Verbose
@@ -41,42 +39,8 @@ func findProjectRoot(path string) (string, error) {
 	return findProjectRoot(nextPath)
 }
 
-func getProjectRepo(projectRoot string) (string, error) {
-	_, stdOut, _, err := utils.RunCommand("git", "-C", projectRoot, "remote", "-v")
-	if err != nil {
-		return "", err
-	}
-	example := fmt.Sprintf("git@%s:%s/<project name>.git", options.ExpectedRepoHost, options.ExpectedOrganization)
-	re := regexp.MustCompile("(?i)" + options.ExpectedRepoHost + `:([^/]*)/([^/\.]*)\.git`)
-	matches := re.FindStringSubmatch(stdOut)
-	if len(matches) == 3 {
-		org := matches[1]
-		project := matches[2]
-
-		if strings.ToLower(org) == options.ExpectedOrganization {
-			return project, nil
-		}
-
-		return "", fmt.Errorf(
-			`%s not a %s project in %s: expecting a remote %s, got %s in %s`,
-			projectRoot,
-			options.ExpectedOrganization,
-			options.ExpectedRepoHost,
-			example,
-			project,
-			org,
-		)
-	}
-	return "", fmt.Errorf(
-		`%s not a project in %s: expecting a remote %s`,
-		projectRoot,
-		options.ExpectedRepoHost,
-		example,
-	)
-}
-
 func getKeyName(projectRoot string) string {
-	repo, err := getProjectRepo(projectRoot)
+	repo, err := git.GetProjectRepo(projectRoot, options.ExpectedRepoHost, options.ExpectedOrganization)
 	if err == nil {
 		return repo
 	}
