@@ -59,6 +59,7 @@ func main() {
 	}
 
 	log.PrintDebugln("dry run: %t", options.DryRun)
+	log.PrintDebugln("concurrency: %t", options.Concurrency)
 	log.PrintDebugln("options.ExpectedOrganization: %s", options.ExpectedOrganization)
 	log.PrintDebugln("options.ExpectedRepoHost: %s", options.ExpectedRepoHost)
 	log.PrintDebugln("keyRing: %s", options.KeyRing)
@@ -73,7 +74,7 @@ func main() {
 			options.Files, _ = utils.FindUnencryptedFiles(projectRoot)
 		}
 
-		utils.InParallel(5, options.Files, func(path string) {
+		utils.Concurrently(options.Concurrency, options.Files, func(path string) {
 			fmt.Printf("encrypting %s\n", path)
 			utils.ExitIfError(kms.Encrypt(key, path))
 			err := git.AddToIgnored(projectRoot, path)
@@ -91,7 +92,7 @@ func main() {
 			options.Files, _ = utils.FindEncryptedFiles(options.OpenAll, projectRoot)
 		}
 
-		utils.InParallel(5, options.Files, func(path string) {
+		utils.Concurrently(options.Concurrency, options.Files, func(path string) {
 			fmt.Printf("decrypting %s\n", path)
 			err := kms.Decrypt(key, path)
 			utils.ExitIfError(err)

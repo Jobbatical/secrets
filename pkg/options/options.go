@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"jobbatical/secrets/pkg/utils"
 	"os"
+	"strconv"
 	"path/filepath"
 	"strings"
 )
@@ -20,6 +21,7 @@ var ExpectedRepoHost string
 var KeyRing string
 var KeyLocation string
 
+var Concurrency int
 var DryRun bool
 var Key string
 var OpenAll bool
@@ -78,6 +80,16 @@ func readRequiredConfig(v *string, argFlag string, envName string, desc string) 
 	}
 }
 
+func getConcurrency() (int) {
+	concurrencyEnv := os.Getenv("SECRETS_CONCURRENCY")
+	if (len(concurrencyEnv) == 0) {
+		return 5
+	}
+	i, err := strconv.Atoi(concurrencyEnv)
+	utils.ExitIfError(err)
+	return i
+}
+
 func init() {
 	var err error
 
@@ -96,6 +108,7 @@ func init() {
 	flag.BoolVar(&OpenAll, "open-all", false, "Opens all .enc files within the repository")
 	flag.StringVar(&ProjectRoot, "root", "", "Project root folder(name will be used as key name)")
 	flag.BoolVar(&Verbose, "verbose", false, "Log debug info")
+	flag.IntVar(&Concurrency, "j", getConcurrency(), "Number of concurrent calls to the service provider")
 
 	// Configuration
 	defer readRequiredConfig(&ExpectedOrganization, "org", "SECRETS_ORG", "Expected organization of the repo")()

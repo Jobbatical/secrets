@@ -110,7 +110,7 @@ func worker(c chan string, wg *sync.WaitGroup, fn func(string)) {
 	}
 }
 
-func InParallel(workerCount int, jobs []string, fn func(string)) {
+func Concurrently(workerCount int, jobs []string, fn func(string)) {
 	ch := make(chan string, workerCount + 1)
 	go func() {
 		for _, job := range jobs {
