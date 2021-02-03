@@ -8,6 +8,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"regexp"
+	"fmt"
 )
 
 var ErrFileAlreadyTracked = errors.New("file already tracked")
@@ -66,4 +68,38 @@ func AddToIgnored(projectRoot string, fileToIgnore string) error {
 		return nil
 	}
 	return appendToFile(path.Join(projectRoot, ".gitignore"), relativePath)
+}
+
+func GetProjectRepo(projectRoot string, repoHost string, org string) (string, error) {
+	_, stdOut, _, err := utils.RunCommand("git", "-C", projectRoot, "remote", "-v")
+	if err != nil {
+		return "", err
+	}
+	example := fmt.Sprintf("git@%s:%s/<project name>.git", repoHost, org)
+	re := regexp.MustCompile("(?i)" + repoHost + `:([^/]*)/([^/\.]*)\.git`)
+	matches := re.FindStringSubmatch(stdOut)
+	if len(matches) == 3 {
+		org := matches[1]
+		project := matches[2]
+
+		if strings.ToLower(org) == org {
+			return project, nil
+		}
+
+		return "", fmt.Errorf(
+			`%s not a %s project in %s: expecting a remote %s, got %s in %s`,
+			projectRoot,
+			org,
+			repoHost,
+			example,
+			project,
+			org,
+		)
+	}
+	return "", fmt.Errorf(
+		`%s not a project in %s: expecting a remote %s`,
+		projectRoot,
+		repoHost,
+		example,
+	)
 }

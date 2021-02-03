@@ -8,7 +8,10 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 )
+
+var createKeyOnce sync.Once
 
 type gcloudError struct {
 	err    error
@@ -35,7 +38,10 @@ func callKms(operation string, keyName string, plaintextFile string, ciphertextF
 	)
 	if err != nil {
 		if strings.Contains(stdErr, "NOT_FOUND: ") {
-			err := createKey(keyName)
+			var err error
+			createKeyOnce.Do(func() {
+				err = createKey(keyName)
+			})
 			if err != nil {
 				return err
 			}

@@ -10,8 +10,6 @@ import (
 	"jobbatical/secrets/pkg/utils"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 )
 
 var verbose bool = options.Verbose
@@ -41,42 +39,8 @@ func findProjectRoot(path string) (string, error) {
 	return findProjectRoot(nextPath)
 }
 
-func getProjectRepo(projectRoot string) (string, error) {
-	_, stdOut, _, err := utils.RunCommand("git", "-C", projectRoot, "remote", "-v")
-	if err != nil {
-		return "", err
-	}
-	example := fmt.Sprintf("git@%s:%s/<project name>.git", options.ExpectedRepoHost, options.ExpectedOrganization)
-	re := regexp.MustCompile("(?i)" + options.ExpectedRepoHost + `:([^/]*)/([^/\.]*)\.git`)
-	matches := re.FindStringSubmatch(stdOut)
-	if len(matches) == 3 {
-		org := matches[1]
-		project := matches[2]
-
-		if strings.ToLower(org) == options.ExpectedOrganization {
-			return project, nil
-		}
-
-		return "", fmt.Errorf(
-			`%s not a %s project in %s: expecting a remote %s, got %s in %s`,
-			projectRoot,
-			options.ExpectedOrganization,
-			options.ExpectedRepoHost,
-			example,
-			project,
-			org,
-		)
-	}
-	return "", fmt.Errorf(
-		`%s not a project in %s: expecting a remote %s`,
-		projectRoot,
-		options.ExpectedRepoHost,
-		example,
-	)
-}
-
 func getKeyName(projectRoot string) string {
-	repo, err := getProjectRepo(projectRoot)
+	repo, err := git.GetProjectRepo(projectRoot, options.ExpectedRepoHost, options.ExpectedOrganization)
 	if err == nil {
 		return repo
 	}
@@ -95,6 +59,7 @@ func main() {
 	}
 
 	log.PrintDebugln("dry run: %t", options.DryRun)
+	log.PrintDebugln("concurrency: %t", options.Concurrency)
 	log.PrintDebugln("options.ExpectedOrganization: %s", options.ExpectedOrganization)
 	log.PrintDebugln("options.ExpectedRepoHost: %s", options.ExpectedRepoHost)
 	log.PrintDebugln("keyRing: %s", options.KeyRing)
@@ -108,27 +73,31 @@ func main() {
 		if len(options.Files) == 0 {
 			options.Files, _ = utils.FindUnencryptedFiles(projectRoot)
 		}
-		for _, path := range options.Files {
+
+		utils.Concurrently(options.Concurrency, options.Files, func(path string) {
 			fmt.Printf("encrypting %s\n", path)
 			utils.ExitIfError(kms.Encrypt(key, path))
 			err := git.AddToIgnored(projectRoot, path)
 			if err == git.ErrFileAlreadyTracked {
 				utils.ErrPrintln("Warning: plain-text file already checked in: %s", path)
-				continue
+				return
 			}
 			utils.ExitIfError(err)
-		}
+		})
+
 		os.Exit(0)
 	}
 	if options.Cmd == options.DecryptCmd {
 		if len(options.Files) == 0 {
 			options.Files, _ = utils.FindEncryptedFiles(options.OpenAll, projectRoot)
 		}
-		for _, path := range options.Files {
+
+		utils.Concurrently(options.Concurrency, options.Files, func(path string) {
 			fmt.Printf("decrypting %s\n", path)
 			err := kms.Decrypt(key, path)
 			utils.ExitIfError(err)
-		}
+		})
+
 		os.Exit(0)
 	}
 	utils.ErrPrintln("Unknown command: %s\n%s", options.Cmd, options.Usage)
