@@ -11,7 +11,7 @@ import (
 	"strings" 
 )
 
-var (
+const (
 	ExpectedOrganization string = "jobbatical"
 	ExpectedRepoHost     string = "github.com"
 	KeyRing              string = "immi-project-secrets"
