@@ -10,9 +10,7 @@ import (
 	"strings"
 	"sync"
 )
-
 var createKeyOnce sync.Once
-
 type gcloudError struct {
 	err    error
 	stdErr string

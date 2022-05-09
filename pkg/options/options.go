@@ -4,22 +4,25 @@ package options
 import (
 	"errors"
 	"flag"
-	"fmt"
 	"jobbatical/secrets/pkg/utils"
 	"os"
-	"strconv"
 	"path/filepath"
-	"strings"
+	"strconv"
+	"strings" 
 )
 
-const Usage string = "Usage secrets <open|seal> [<file path>...] [--dry-run] [--verbose] [--root <project root>] [--key <encryption key name>] [--open-all]"
-const EncryptCmd string = "seal"
-const DecryptCmd string = "open"
+var (
+	ExpectedOrganization string = "jobbatical"
+	ExpectedRepoHost     string = "github.com"
+	KeyRing              string = "immi-project-secrets"
+	KeyLocation          string = "global"
+)
 
-var ExpectedOrganization string
-var ExpectedRepoHost string
-var KeyRing string
-var KeyLocation string
+const (
+	Usage      string = "Usage secrets <open|seal> [<file path>...] [--dry-run] [--verbose] [--root <project root>] [--key <encryption key name>] [--open-all]"
+	EncryptCmd string = "seal"
+	DecryptCmd string = "open"
+)
 
 var Concurrency int
 var DryRun bool
@@ -70,19 +73,19 @@ func popFiles(args []string) ([]string, []string, error) {
 	return files, os.Args, nil
 }
 
-func readRequiredConfig(v *string, argFlag string, envName string, desc string) func() {
-	flag.StringVar(v, argFlag, os.Getenv(envName), desc)
-	return func() {
-		if len(*v) == 0 {
-			fmt.Fprintf(os.Stderr, "Missing required configuration: %s\nPlease set %s environment var or pass --%s flag\n", desc, envName, argFlag)
-			os.Exit(2)
-		}
-	}
-}
+// func readRequiredConfig(v *string, argFlag string, envName string, desc string) func() {
+// 	flag.StringVar(v, argFlag, os.Getenv(envName), desc)
+// 	return func() {
+// 		if len(*v) == 0 {
+// 			fmt.Fprintf(os.Stderr, "Missing required configuration: %s\nPlease set %s environment var or pass --%s flag\n", desc, envName, argFlag)
+// 			os.Exit(2)
+// 		}
+// 	}
+// }
 
-func getConcurrency() (int) {
+func getConcurrency() int {
 	concurrencyEnv := os.Getenv("SECRETS_CONCURRENCY")
-	if (len(concurrencyEnv) == 0) {
+	if len(concurrencyEnv) == 0 {
 		return 5
 	}
 	i, err := strconv.Atoi(concurrencyEnv)
@@ -92,7 +95,6 @@ func getConcurrency() (int) {
 
 func init() {
 	var err error
-
 	Cmd, os.Args, err = popCommand(os.Args)
 	if err != nil {
 		utils.ErrPrintln("Error: %s\n%s", err, Usage)
@@ -110,11 +112,11 @@ func init() {
 	flag.BoolVar(&Verbose, "verbose", false, "Log debug info")
 	flag.IntVar(&Concurrency, "j", getConcurrency(), "Number of concurrent calls to the service provider")
 
-	// Configuration
-	defer readRequiredConfig(&ExpectedOrganization, "org", "SECRETS_ORG", "Expected organization of the repo")()
-	defer readRequiredConfig(&ExpectedRepoHost, "repo-host", "SECRETS_REPO_HOST", "Expected host for the repo")()
-	defer readRequiredConfig(&KeyRing, "key-ring", "SECRETS_KEY_RING", "The key ring to use for encryption")()
-	defer readRequiredConfig(&KeyLocation, "key-location", "SECRETS_KEY_LOCATION", "The location of the key ring")()
+	// // Configuration
+	// defer readRequiredConfig(&ExpectedRepoHost, "repo-host", "SECRETS_REPO_HOST", "Expected host for the repo")()
+	// defer readRequiredConfig(&ExpectedOrganization, "org", "SECRETS_ORG", "Expected organization of the repo")()
+	// defer readRequiredConfig(&KeyRing, "key-ring", "SECRETS_KEY_RING", "The key ring to use for encryption")()
+	// defer readRequiredConfig(&KeyLocation, "key-location", "SECRETS_KEY_LOCATION", "The location of the key ring")()
 
 	flag.Parse()
 }
