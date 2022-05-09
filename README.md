@@ -8,6 +8,10 @@ secrets open [<file path>...] [options]
 
 # To encrypt a file or files.
 secrets seal [<file path>...] [options]
+
+# To encrypt for a Jobbatical.
+chmod +x jobbatical.sh
+./jobbatical.sh
 ```
 
 ## Options
