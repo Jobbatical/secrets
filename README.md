@@ -9,9 +9,13 @@ secrets open [<file path>...] [options]
 # To encrypt a file or files.
 secrets seal [<file path>...] [options]
 
-# To encrypt for a Jobbatical.
+# To decrypt for a Jobbatical.
 chmod +x jobbatical.sh
 ./jobbatical.sh
+
+# To open-all secrets in Jb4c.
+From root directory of jb4c execute last command written in ./jobbatical.sh
+Example: -> put env flags as in ./jobbatical.sh script, after env flags specify secrets binary filepath ../secrets/target/1.4.0/./secrets-darwin-amd64 open --open-all
 ```
 
 ## Options
